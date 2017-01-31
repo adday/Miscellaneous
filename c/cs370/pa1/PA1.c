@@ -1,0 +1,474 @@
+//-------------------------------------------------------
+  Build, add to, sort, and delete from linked list data structure in order to maintain
+			 a record of members for a student club. Can use a file to initialize the linked list
+			 and can save to that file prior to exit.
+
+	Parameters: 
+	-f filename : the source file name, create it if not exist after showing a message to the user 		and get his confirmation.
+	-s field :[optional] the field used to sort the data, if not supplied assume a default field (eg. 		firstname).
+	-a : a flag to set the order of sort. Ascending order sort if provided, descending if not.
+*/
+
+
+
+#include <malloc.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+
+#define DEBUG 0
+
+// Defining the records structure for students' Systems Club membership list
+typedef struct _StudClub{
+  int Id;
+  char fName[20];
+  char lName[20];
+  char Email[40];
+  int yearsAtCSU;
+  
+  struct _StudClub *next;
+} StudClub;
+
+
+
+//------------------------------------------------------
+// Display the menu and return the user choices
+char Menu(){
+char ch;
+do{
+printf("\n Main Menu");
+printf("\n ------------------");
+printf("\n1- Add Student");
+printf("\n2- Delete Student");
+printf("\n3- List All Members");
+printf("\n4- Save data to file & exit");
+printf("\n -------------------------------");
+printf("\n Enter your choice(1-4):");
+ch=getchar();
+} while(ch>'4' || ch<'1');
+return ch;
+}
+
+
+
+
+//------------------------------------------------------
+//Function to Add members info to the linked list
+//@parameters :
+// listHead : Pointer to the head of the list. 
+	
+
+/*	[Q1: We need a pointer to pointer in this function, Why?]
+
+	We are linking pointers in a linked list data structure. Therefore, to initialize this list we nee
+	to pass the pointer by reference. This is accomplished by passing the pointer of the pointer struct 
+	to the function AddMembers. This follows a common C paradigm, that when modifying a local variable 
+	of one function(the head pointer struct from main), we must pass a double pointer to this function
+ 	in order for it to be manipulate the head pointer.
+*/
+
+// id,fn,ln, gpa, email : Member's id,first name, last name, GPA, and email respectively
+// sortIndx : The field number used for sorting the list, 1 is id, 2 is first name, and 3 is last name.
+
+int AddMember(StudClub **listHead,int id,char *fn,char *ln, int yearsAtCSU, char *email,  int sortIndx, int sort)
+{
+
+
+/*	[Q2: This function has too many value parameters id,fn,ln,... etc. Is there a better way to pass  	those values? if Yes, write a prototype for it]
+	 Yes. A better way to all of these values could be to initialize a new StudClub struct in the 
+	 main class and pass the reference to this struct.
+
+	int AddMember(StudClub **listHead, StudClub *newMember, int sortIndx, int sort)
+		
+*/
+
+
+  StudClub *current=*listHead,*prev,*newNode;
+  int locFound=0;
+
+// Your code to check if member id already exists
+   
+   while(current != NULL){
+	if(current->Id == id){
+		printf("Member ID already exists.");
+		return 1;}
+	current = current->next;
+	}
+
+
+// Code to create new node and populate it with data.
+   
+  newNode = malloc(sizeof(StudClub));
+  newNode->Id = id;
+  strcpy(newNode->fName,fn);
+  strcpy(newNode->lName,ln);
+  newNode->yearsAtCSU = yearsAtCSU;
+  strcpy(newNode->Email,email);
+
+
+// Code to add to an empty list
+  if(*listHead == NULL){
+	*listHead = newNode;
+	return 1;}
+	
+// code to find the apppropriate position of the new record in the list based on
+// the sorting field.
+// Hint:  You should keep track of pointers to the previous and next 
+// nodes you will use to insert a new record
+ 	
+  current = *listHead;
+  prev = current;
+//.......Your code Goes here.................
+
+  if(sort == 0){//sort descending
+   switch(sortIndx){//this sort routine repeats on else for ascending order
+	case 1: if(newNode->Id < current->Id){//sort by id (logic repeats in following blocks)
+			locFound++;//increment for later check
+			while((newNode->Id < current->Id) && (current->next != NULL)){
+				prev = current;//advance prev node ptr in ll
+				current = current->next;//advance current node ptr in ll 
+				}
+			if(newNode->Id < current->Id)//check last node
+				prev = current;//advance prev node ptr to last node
+				}
+        	break;
+	case 2: if(strcasecmp(newNode->fName,current->fName) < 0){//above repeated for fName
+			locFound++;
+			while((strcasecmp(newNode->fName,current->fName) < 0) && (current->next != NULL)){
+				prev = current;
+				current = current->next;
+				}
+			if(strcasecmp(newNode->fName,current->fName) < 0)
+				prev = current;
+				}
+		break;
+	case 3: if(strcasecmp(newNode->lName,current->lName) < 0){//above repeated for lName
+			locFound++;
+			while((strcasecmp(newNode->lName,current->lName) < 0) && (current->next != NULL)){
+				prev = current;
+				current = current->next;
+				}
+			if(strcasecmp(newNode->lName,current->lName) < 0)
+				prev = current;
+				}
+		break;
+		}}//end sort descending
+  else{//sort ascending
+   switch(sortIndx){//same as above switch statement but sorts ascending order
+	case 1: if(newNode->Id > current->Id){
+			locFound++;
+			while((newNode->Id > current->Id) && (current->next != NULL)){
+				prev = current;
+				current = current->next;
+				}
+			if(newNode->Id > current->Id)
+				prev = current;
+				}
+        	break;
+	case 2: if(strcasecmp(newNode->fName,current->fName) > 0){
+			locFound++;
+			while((strcasecmp(newNode->fName,current->fName) > 0) && (current->next != NULL)){
+				prev = current;
+				current = current->next;
+				}
+			if(strcasecmp(newNode->fName,current->fName) > 0)
+				prev = current;
+				}
+		break;
+	case 3: if(strcasecmp(newNode->lName,current->lName) > 0){
+			locFound++;
+			while((strcasecmp(newNode->lName,current->lName) > 0) && (current->next != NULL)){
+				prev = current;
+				current = current->next;
+				}
+			if(strcasecmp(newNode->lName,current->lName) > 0)
+				prev = current;
+				}
+		break;
+		}}//end sort ascending
+	
+// Now to add the new record : 
+// there are 2 cases:
+// 1- if the record is to be inserted at the beginning of the list
+// 		Hint: you need to change the list header pointer
+  if(locFound == 0){
+	newNode->next = *listHead;
+	*listHead = newNode;}
+// 2-If not at the beginning, then it would be inserted after some record
+//	   based on the order. 
+//.......Your code Goes here.................
+  else{	
+	newNode->next = prev->next;
+	prev->next = newNode;
+	}
+  return 1;
+}//end AddMember
+	
+
+
+
+
+//------------------------------------------------------
+// Function to read members' info from a file and add them to the
+// members linked list sorted based on the sortIndx
+// Use the function AddMember
+//@ Params:
+// fileName : the file to read from. The file contains members info separated by 
+//		commas and/or spaces  and each line belongs to a member.
+// list: Pointer to the head of the list. 
+
+
+/*	[Q3: We need a pointer to pointer in this function, Why?]
+	When reading the file we intend to add new members to the linked list data structure. 
+	In order to do so, there is a call to AddMember function, which takes the pointer to a
+	pointer as a parameter. For us to pass the correct linked list to AddMember, readfile 
+	needs the pointer to the head of the linked list.	
+*/
+
+
+// sortIndx : The field number used for sorting the list, 1 is id, 2 is first name, and 3 is last name.
+// @Return:
+//  1 on success and 0 on failure. 
+int readfile (char *fileName, StudClub **list, int sortIndx, int sort){
+  FILE *fd;
+  char fn[20],ln[20],email[40];
+  int id;
+  int years;
+
+  if (DEBUG)
+    printf ("Entering readfile\n");
+
+  fd = fopen (fileName, "r");
+  if (!fd){
+	printf("\n Error reading input file");
+    	return 0;
+	}
+	
+// loop through the file and read the data
+// line by line,  call the AddMember function to add the member to the list	
+  while(fscanf(fd,"%d,%s %s ,%s ,%d",&id,fn,ln,email,&years) == 5)
+	AddMember(list,id,fn,ln,years,email,sortIndx, sort);
+
+ //close the file   
+  fclose (fd);
+  return 1;
+}//end readfile
+
+
+
+
+
+
+
+//------------------------------------------------------
+//function to write data from the list to a text file
+// fileName : the file to Write to. Each record of the data is written as separated by commas and/or spaces
+//               and each record is written in a seprate line. 
+
+// list: The head of the list pointer. 
+
+/*	[Q4: We didn't use a pointer to pointer in this function, Why?]
+	We do not intend to add to the linked list structure in this function. We are simply
+	accessing the values, not linking structs. Therefore, we are able to pass a single stuct
+	(the head of the list) and use the struct property 'next' in order to access all
+	the structs in the linked list that we have already established. Basically,  since 
+	we are not modifying the head pointer we do not need to use the double pointer approach.
+*/
+
+void writefile (char *fileName, StudClub *list){
+  FILE *fd;
+  StudClub *p = list;
+  StudClub *last = list;
+  if (DEBUG)
+  	printf ("Entering writefile\n");
+  fd = fopen (fileName, "w");
+
+  if (!fd){//ensure the file to write to exists
+	printf("\n Error writing to file\n");
+    	return;
+	}
+// loop through THE LINKED list and write the records to the file
+// line by line
+  while(p != NULL){
+	fprintf(fd,"%d,%s %s ,%s ,%d \n",p->Id,p->fName,p->lName,p->Email,p->yearsAtCSU);
+	p = p->next;
+	free(last);
+	last = p;
+		}
+
+  fclose (fd);
+  return;
+
+}//end writefile
+
+
+
+
+
+
+// Function to delete a member data from the list using his Id
+//@ Params:
+//
+// Stdlist: Pointer to the head of the members list. 
+
+/*	[Q5: We need a pointer to pointer in this function, Why?]
+	In this function we are manipulating the head pointer of the linked list. To accomplish this
+	task we need to have access to pass the double pointer so that we are manipulating the 
+	actual linked list data structure that has been created.	
+*/
+
+// id : The Id of the member whose data is to be deleted.
+// @Return:
+//  1 on sucsses and 0 on failure. 
+//------------------------------------------------------
+
+int deleteMember(int id,StudClub **StdList){
+  StudClub *current=*StdList,*prev;
+	
+// [what about deleting from an empty list? Handle appropriately.]
+	
+  if(*StdList == NULL){//ensure that the linked list has been initialized with some members
+	printf("Attempting to delete from empty list");
+	return 0;	
+		}	
+		
+// what if the record to be deleted is at the head of the list
+	
+//.......Your code Goes here.................
+  if(current->Id == id){
+	*StdList = current->next;
+	return 1;}
+	
+// Not the in the front, OK we need to find it and keep track of
+// the pointers to the previous and next records
+// then delete it if found.
+  while(current!=NULL){
+	if(current->Id==id){
+		prev->next=current->next;
+	        free(current);
+		return 1;}
+	prev=current;
+	current=current->next;
+	}
+	
+// Not found! OK this means delete wasn't successful. Return 0.
+printf("\n Member id not found !");
+return 0;
+}//end deleteMember
+
+
+
+
+
+
+//------------------------------------------------------
+//function to display members' info
+//@params:
+// Pointer to the header of the list
+void displayMembersList(StudClub *listHead)
+{
+StudClub *p=listHead;
+printf("\n%-9s %-20s %-20s %-10s %-40s","MemberId","first Name","last name"," Years@CSU","    E-mail");
+printf("\n------------------------------------------------------------------------------------------------------------------");
+while(p!=NULL){
+	printf("\n%-9d %-20s %-20s %-10d %-40s",p->Id,p->fName,p->lName,p->yearsAtCSU,p->Email);
+	p=p->next;
+	}
+}//end displayMembersList
+
+
+
+
+//------------------------------------------------------
+//Main function:
+// parses the command line parameters, defines the header of the list,
+// initializes the list with data from the file provided with the command line
+// then displays the menu, and calls other functions based
+// on user choices.
+
+
+int main(int argc, char **argv){
+  char ch;
+  char fileName[30];
+  int sort=0;
+  int c;
+  int sortIndx=1;
+  StudClub *MembersList = NULL;  // the list header is declared and initialized with NULL
+  int id;
+  char fn[20],ln[20],email[40];
+  int years;
+
+// start parsing the command line parameters
+
+  opterr = 0;
+  if(argc<2) {
+  	fprintf (stderr, "Usage: members -f inputfile.txt [-s fileName] [-a] \n");
+	return 0;
+  	}
+  while ((c = getopt (argc, argv, "f:s:a")) != -1)
+    switch (c){
+      case 'f': // the user provided the file and its name should be in the optarg
+            	// Complete the code to get the file name 
+	        // ..............complete this code.....................
+	        strcpy(fileName,optarg);          
+	        break;
+      case 's': // the user provided the sorting field, we need to check the optarg
+      		// and set the sortIndx accordingly 
+		if (strcmp(optarg,"Id")==0) sortIndx = 1;
+			else if (strcmp(optarg,"fName")==0)  sortIndx = 2;
+	   			else if  //  ................ complete this if  statement........
+	   	  			(strcmp(optarg,"lName")==0) sortIndx=3;
+		      		else printf("\n unknown index field, default assumed");
+		break;
+      case 'a': // the sorting direction (ascending or descending)
+                //is not used in this code, you need to figure out how and where to use it ?
+		sort = 1;
+		break;
+     
+      case '?': //there was an error
+	 	if (optopt == 'f' || optopt == 's' )
+          	fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+		fprintf (stderr, "Usage: members -f inputfile.txt [-s fName] [-a] \n");
+		return 0;
+     	 }
+ // now initialize the list with data from the file provided by the user
+ // .......... your code goes here..........................
+  readfile (fileName, &MembersList, sortIndx, sort);
+
+  do{
+  ch=Menu();
+  switch (ch){
+	  case '1': printf("\n Enter Member info. to add ");
+		    printf("\n Id:");
+		    scanf("%d",&id);
+		    printf("\n First name:");
+		    scanf("%s",fn);
+		    printf("\n Last name:");
+		    scanf("%s",ln);
+		    printf("\n years at CSU:");
+		    scanf("%d",&years);
+		    printf("\n E-mail:");
+		    scanf("%s",email);
+		    // call the function AddMember with these inputs
+		    //......complete the function call.................
+	   	    AddMember(&MembersList,id,fn,ln,years,email,sortIndx, sort);
+		    break;
+	  case '2': printf("\n Enter Member Id to delete :");
+		    scanf("%d",&id);
+		    // call the function deleteMember with this input id 
+	            //......complete the function call.................
+		    deleteMember(id,&MembersList);
+		    break;
+	  case '3': displayMembersList(MembersList);
+		    break;
+	  case '4': writefile (fileName, MembersList);
+		    break; 
+	}
+
+  }while(ch!='4');
+
+  return 0;
+}//end main
+

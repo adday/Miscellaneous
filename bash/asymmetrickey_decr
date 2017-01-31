@@ -1,0 +1,25 @@
+#!/bin/bash
+[ -e Alexander-Day.plaintext ] && rm Alexander-Day.plaintext
+
+#read in d and n
+filename=$1
+mapfile < $filename 
+IFS=" " read d n <<< ${MAPFILE[0]}
+
+# chr() - converts decimal value to its ASCII character representation
+chr() {
+  printf \\$(printf '%03o' $1)
+}
+
+#read in ciphertext character by character
+FILE4=$2
+decr=""
+while read -ra line
+do
+	for word in "${line[@]}"
+	do
+		val=$(bc <<< "$word^$d%$n")       
+		decr="$decr$(chr "$val")"
+	done
+done < "$FILE4"
+printf "$decr \n" >> Alexander-Day.plaintext

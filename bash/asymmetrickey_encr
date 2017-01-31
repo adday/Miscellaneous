@@ -1,0 +1,36 @@
+#!/bin/bash
+[ -e Alexander-Day.ciphertext ] && rm Alexander-Day.ciphertext
+
+#read in e and n
+filename=$1
+mapfile < $1
+IFS=" " read e n <<< ${MAPFILE[0]}
+
+# ord() - converts ASCII character to its decimal value
+ord() {
+printf '%d' "'$1"
+}
+
+#read in plaintext character by character
+FILE2=$2
+while IFS= read -r -n1 char
+do
+        #display one character at a time
+	let="$char"
+	val=$(ord "$let")
+	if [ $val -eq 0 ] #if EOF
+	then 
+		break
+	fi
+	if [ $val -eq 32 ] #if space
+	then
+		printf "\n" >> Alexander-Day.ciphertext
+	fi
+	encr=$(bc <<< "$val^$e%$n")
+	printf "$encr ">> Alexander-Day.ciphertext
+	if [ $val -eq 32 ] #if space
+	then
+		printf "\n" >> Alexander-Day.ciphertext
+	fi
+done < "$FILE2"
+printf "\n" >> Alexander-Day.ciphertext
